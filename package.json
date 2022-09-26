@@ -1,6 +1,6 @@
 {
   "name": "inlada-pg-storage-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -32,6 +32,11 @@
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.2",
     "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "inlada-logger": "^1.0.0",
+    "inlada-postgresql-client": "^1.0.0",
+    "inladajs": "^1.0.3",
+    "uuid": "^9.0.0"
   }
-
 }
