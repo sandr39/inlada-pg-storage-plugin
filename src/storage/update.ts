@@ -9,7 +9,9 @@ import {
   makeOnConflictStatement, tableColumnTypes,
 } from './utils';
 import { createQueryBuilder } from '../queryBuilder';
-import { ERROR_NAMES, IStorageFn, MY_PLUGIN_NAME } from '../const';
+import {
+  ERROR_NAMES, IStorageFn, OPTION_NAMES, PLUGIN_NAME,
+} from '../const';
 
 export const update: IStorageFn = async <
   TOBJECT_NAMES extends string,
@@ -97,10 +99,14 @@ export const update: IStorageFn = async <
     .where([{ table, field: 'id', value: event.getGeneralIdentity() }])
     .addColumnTypes(columnTypes);
 
-  event.setPluginData(MY_PLUGIN_NAME, query);
+  event.setPluginData(PLUGIN_NAME, query);
 };
 
 export const afterUpdate = async <TEvent extends IAnyEvent>(e: TEvent): Promise<unknown | unknown[]> => {
+  if (e.getOptions(OPTION_NAMES.$doNotExecQuery)) {
+    return false;
+  }
+
   const rows = await exec(e) as unknown[];
   if (rows.length === 1) {
     return rows[0];

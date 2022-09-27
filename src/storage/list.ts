@@ -8,7 +8,7 @@ import {
 import { IJoinExtend, IQueryBuilderSelect, IWereFieldInfo } from '../interfaces/queryBuilder';
 import { createQueryBuilder } from '../queryBuilder';
 import {
-  ACTION_NAMES, IStorageFn, MY_PLUGIN_NAME, OPTION_NAMES,
+  ACTION_NAMES, IStorageFn, PLUGIN_NAME, OPTION_NAMES, PLUGIN_SETS_EXPORT,
 } from '../const';
 
 const getWhereFields = <
@@ -67,9 +67,9 @@ const joinAndExtend = async <
   }
 
   const subQuery = await e.processNewEvent({
-    [OPTION_NAMES.$doNotExecAndReturnQuery]: true,
+    [OPTION_NAMES.$doNotExecQuery]: true,
     [OPTION_NAMES.$useExtendFieldSet]: true,
-    // [OPTION_NAMES.$doNotAfterActionProcess]: true,
+    [OPTION_NAMES.$pluginSet]: PLUGIN_SETS_EXPORT.noExec,
     ...whereFields,
     ...Object.fromEntries(addWhereFields.map(({ field, value }) => [field, value])),
   }, {
@@ -204,7 +204,7 @@ export const list: IStorageFn = async <
     query.order([{ table: mainTable, field: 'id' }]);
   }
 
-  event.setPluginData(MY_PLUGIN_NAME, query);
+  event.setPluginData(PLUGIN_NAME, query);
 
   const noExtend = event.getOptions(OPTION_NAMES.$noExtend);
   if (!noExtend) {

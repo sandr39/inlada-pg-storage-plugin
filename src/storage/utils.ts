@@ -3,7 +3,7 @@ import {
 } from 'inladajs';
 import { IPGClient } from 'inlada-postgresql-client';
 import { IColumnTypes, ITableColumnTypes } from '../interfaces/base';
-import { ISuitableRelation, OPTION_NAMES, MY_PLUGIN_NAME } from '../const';
+import { ISuitableRelation, OPTION_NAMES, PLUGIN_NAME } from '../const';
 
 export const determineMeAnother = <
   TOBJECT_NAMES extends string,
@@ -94,8 +94,8 @@ export const makeOnConflictStatement = async (pgClient: IPGClient, table: string
 };
 
 export const exec = async <TEvent extends IAnyEvent>(e: TEvent): Promise<unknown[] | null> => {
-  if (!e.getOptions(OPTION_NAMES.$doNotExecAndReturnQuery)) {
-    const query = e.getPluginData(MY_PLUGIN_NAME);
+  if (!e.getOptions(OPTION_NAMES.$doNotExecQuery)) {
+    const query = e.getPluginData(PLUGIN_NAME);
     return query?.execute?.() || null;
   }
 

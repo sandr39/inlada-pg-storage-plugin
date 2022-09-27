@@ -10,7 +10,7 @@ import {
 } from './utils';
 import { multiParamProcessors, QUERY_PROCESSOR_NAMES } from '../queryProcessor/abstractMultiParamsProcessors';
 import {
-  ACTION_NAMES, IStorageFn, OPTION_NAMES, MY_PLUGIN_NAME,
+  ACTION_NAMES, IStorageFn, OPTION_NAMES, PLUGIN_NAME, PLUGIN_SETS_EXPORT,
 } from '../const';
 import { createQueryBuilder } from '../queryBuilder';
 
@@ -60,8 +60,8 @@ export const insert: IStorageFn = async <
         .reduce((a, [k, v]) => ((typeof v === 'function') ? { ...a, [k]: v(event) } : { ...a, [k]: v }), createData);
 
       const subQuery = await event.processNewEvent({
-        [OPTION_NAMES.$doNotExecAndReturnQuery]: true,
-        // [OPTION_NAMES.$doNotAfterActionProcess]: true, // make as different plugin sets
+        [OPTION_NAMES.$doNotExecQuery]: true,
+        [OPTION_NAMES.$pluginSet]: PLUGIN_SETS_EXPORT.noExec,
         ...createData,
       }, {
         actionName: ACTION_NAMES.create, objectName: anotherEntityName,
@@ -81,7 +81,7 @@ export const insert: IStorageFn = async <
   query.onConflict(await makeOnConflictStatement(await pgClientFactory(event.uid), mainTable, fieldsToUpdate));
   query.noOuterReturn(!!noNeedToReturn);
 
-  event.setPluginData(MY_PLUGIN_NAME, query);
+  event.setPluginData(PLUGIN_NAME, query);
 
   let allCreatedEntities = {};
   await Promise.all(
@@ -99,7 +99,7 @@ export const insert: IStorageFn = async <
           .setReturning(realTable, [{ field: anotherJoinField }])
           .noOuterReturn(true);
 
-        event.setPluginData(MY_PLUGIN_NAME, addNew);
+        event.setPluginData(PLUGIN_NAME, addNew);
         return addNew;
       }),
   );
@@ -108,7 +108,7 @@ export const insert: IStorageFn = async <
 export const afterInsert = async <TEvent extends IAnyEvent>(e: TEvent): Promise<unknown | unknown[] | null> => {
   const { me: { name, type: { name: entityName } = {} } } = e;
 
-  if (e.getOptions(OPTION_NAMES.$doNotExecAndReturnQuery)) {
+  if (e.getOptions(OPTION_NAMES.$doNotExecQuery)) {
     return null;
   }
 

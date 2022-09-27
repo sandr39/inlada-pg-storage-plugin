@@ -1,10 +1,10 @@
 import {
-  IAnyEvent, IEntityRelation, IObjectInfo, IStorageClientFactory,
+  IAnyEvent, IStorageClientFactory,
 } from 'inladajs';
 import { IIdObject } from 'inladajs/dist/interfaces/base';
 import { createQueryBuilder } from '../queryBuilder';
 import {
-  ERROR_NAMES, IStorageFn, OPTION_NAMES, MY_PLUGIN_NAME,
+  ERROR_NAMES, IStorageFn, OPTION_NAMES, PLUGIN_NAME,
 } from '../const';
 import { tableColumnTypes } from './utils';
 import { IQueryBuilderDelete } from '../interfaces/queryBuilder';
@@ -15,8 +15,8 @@ export const remove: IStorageFn = async <
   >(
   event: TEvent,
   pgClientFactory: IStorageClientFactory,
-  dbStructure: Partial<Record<TOBJECT_NAMES, IObjectInfo<TOBJECT_NAMES>>>,
-  relationsAll: IEntityRelation<TOBJECT_NAMES>[],
+  // dbStructure: Partial<Record<TOBJECT_NAMES, IObjectInfo<TOBJECT_NAMES>>>,
+  // relationsAll: IEntityRelation<TOBJECT_NAMES>[],
 ) => {
   const {
     me: {
@@ -52,15 +52,15 @@ export const remove: IStorageFn = async <
       .where([{ table, field: 'id', value: ids[0] }]);
   }
 
-  event.setPluginData(MY_PLUGIN_NAME, query);
+  event.setPluginData(PLUGIN_NAME, query);
 };
 
 export const afterRemove = async <TEvent extends IAnyEvent>(e: TEvent): Promise<boolean> => {
-  if (e.getOptions(OPTION_NAMES.$doNotExecAndReturnQuery)) {
+  if (e.getOptions(OPTION_NAMES.$doNotExecQuery)) {
     return false;
   }
 
-  const query = e.getPluginData(MY_PLUGIN_NAME);
+  const query = e.getPluginData(PLUGIN_NAME);
 
   const rows = await (query as IQueryBuilderDelete).execute<IIdObject>();
 

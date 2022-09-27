@@ -1,4 +1,10 @@
-export { createPostgresStoragePlugin } from './pluginFactory';
 export {
-  ACTION_NAMES, ERROR_NAMES, ERRORS_INFO, MY_PLUGIN_NAME, OPTION_NAMES,
+  ACTION_NAMES as ACTION_NAMES_EXPORT,
+  ERROR_NAMES as ERROR_NAMES_EXPORT,
+  ERRORS_INFO as ERRORS_INFO_EXPORT,
+  PLUGIN_NAME as PLUGIN_NAME_EXPORT,
+  OPTION_NAMES as OPTION_NAMES_EXPORT,
+  PLUGIN_SETS_EXPORT,
 } from './const';
+
+export { createPostgresStoragePlugin } from './pluginFactory';

@@ -11,15 +11,16 @@ export enum ACTION_NAMES {
 }
 
 export enum OPTION_NAMES {
-  $doNotExecAndReturnQuery = '$doNotExecAndReturnQuery',
+  $doNotExecQuery = '$doNotExecQuery',
   $useExtendFieldSet = '$useExtendFieldSet',
   $orderByIdDesc = '$orderByIdDesc',
   $orderById = '$orderById',
   $noExtend = '$noExtend',
-  $searchInside = '$searchInside'
+  $searchInside = '$searchInside',
+  $pluginSet = '$pluginSet'
 }
 
-export const MY_PLUGIN_NAME = 'pgStoragePlugin';
+export const PLUGIN_NAME = 'pgStoragePlugin';
 
 export type IStorageFn = <TOBJECT_NAMES extends string, TEvent extends IAnyEvent>(
   event: TEvent,
@@ -48,4 +49,9 @@ export const ERRORS_INFO: Record<ERROR_NAMES, IError<ERROR_NAMES, IAnyEvent>> = 
 
 export interface ISuitableRelation {
   [field : string]: number[]
+}
+
+export enum PLUGIN_SETS_EXPORT {
+  default = 'default',
+  noExec = 'noExec',
 }
