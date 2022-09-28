@@ -10,7 +10,7 @@ import {
 } from './utils';
 import { createQueryBuilder } from '../queryBuilder';
 import {
-  ERROR_NAMES, IStorageFn, OPTION_NAMES, PLUGIN_NAME,
+  ERROR_NAMES_EXPORT, IStorageFn, OPTION_NAMES_EXPORT, PLUGIN_NAME_EXPORT,
 } from '../const';
 
 export const update: IStorageFn = async <
@@ -86,7 +86,7 @@ export const update: IStorageFn = async <
 
   // duplicates in updateRelatedTables (try processEntityAssociations)
   if (!fieldsToUpdateSelective?.length && !updateRelatedTables.length) {
-    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES.nothingToProcess);
+    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.nothingToProcess);
   }
 
   const columnTypes = await tableColumnTypes(await pgClientFactory(event.uid), table);
@@ -99,11 +99,11 @@ export const update: IStorageFn = async <
     .where([{ table, field: 'id', value: event.getGeneralIdentity() }])
     .addColumnTypes(columnTypes);
 
-  event.setPluginData(PLUGIN_NAME, query);
+  event.setPluginData(PLUGIN_NAME_EXPORT, { query });
 };
 
 export const afterUpdate = async <TEvent extends IAnyEvent>(e: TEvent): Promise<unknown | unknown[]> => {
-  if (e.getOptions(OPTION_NAMES.$doNotExecQuery)) {
+  if (e.getOptions(OPTION_NAMES_EXPORT.$doNotExecQuery)) {
     return false;
   }
 

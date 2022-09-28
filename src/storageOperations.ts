@@ -5,17 +5,17 @@ import {
 import { logger } from 'inlada-logger';
 import { IIdObject } from 'inladajs/dist/interfaces/base';
 import {
-  ACTION_NAMES, ERROR_NAMES, IStorageFinalizeFn, IStorageFn,
+  ACTION_NAMES_EXPORT, ERROR_NAMES_EXPORT, IStorageFinalizeFn, IStorageFn,
 } from './const';
 import { storage, STORAGE_ACTION_NAMES } from './storage';
 import { filterUnique } from './storage/utils';
 
-const STORAGE_ACTIONS_ROUTE: { [k in ACTION_NAMES]?: STORAGE_ACTION_NAMES } = {
-  [ACTION_NAMES.create]: STORAGE_ACTION_NAMES.insert,
-  [ACTION_NAMES.list]: STORAGE_ACTION_NAMES.list,
-  [ACTION_NAMES.update]: STORAGE_ACTION_NAMES.update,
-  [ACTION_NAMES.delete]: STORAGE_ACTION_NAMES.remove,
-  [ACTION_NAMES.detail]: STORAGE_ACTION_NAMES.detail,
+const STORAGE_ACTIONS_ROUTE: { [k in ACTION_NAMES_EXPORT]?: STORAGE_ACTION_NAMES } = {
+  [ACTION_NAMES_EXPORT.create]: STORAGE_ACTION_NAMES.insert,
+  [ACTION_NAMES_EXPORT.list]: STORAGE_ACTION_NAMES.list,
+  [ACTION_NAMES_EXPORT.update]: STORAGE_ACTION_NAMES.update,
+  [ACTION_NAMES_EXPORT.delete]: STORAGE_ACTION_NAMES.remove,
+  [ACTION_NAMES_EXPORT.detail]: STORAGE_ACTION_NAMES.detail,
 };
 
 export const prepareStorageOperation = async <
@@ -25,7 +25,7 @@ export const prepareStorageOperation = async <
   pgClientFactory: IStorageClientFactory,
   dbStructure: Partial<Record<TOBJECT_NAMES, IObjectInfo<TOBJECT_NAMES>>>,
   relations: IEntityRelation<TOBJECT_NAMES>[],
-  actionName: ACTION_NAMES) => {
+  actionName: ACTION_NAMES_EXPORT) => {
   const effectiveActionName = STORAGE_ACTIONS_ROUTE[actionName];
 
   if (effectiveActionName) {
@@ -40,7 +40,6 @@ let caseFields: Record<string, string>;
 
 const processCase = <TOBJECT_NAMES extends string>(
   o: Record<string, unknown>,
-  properCaseMap: Record<string, string>,
   dbStructure: Partial<Record<TOBJECT_NAMES, IObjectInfo<TOBJECT_NAMES>>>,
 ) => {
   if (!caseFields) {
@@ -56,7 +55,7 @@ const processCase = <TOBJECT_NAMES extends string>(
     .entries(o)
     .reduce((acc, [k, v]) => ({
       ...acc,
-      [properCaseMap[k] || k]: v,
+      [caseFields[k] || k]: v,
     }), {});
 };
 
@@ -67,7 +66,7 @@ export const finalizeStorageOperation = async <
   pgClientFactory: IStorageClientFactory,
   dbStructure: Partial<Record<TOBJECT_NAMES, IObjectInfo<TOBJECT_NAMES>>>,
   relations: IEntityRelation<TOBJECT_NAMES>[],
-  actionName: ACTION_NAMES)
+  actionName: ACTION_NAMES_EXPORT)
   : Promise<IIdObject[] | IIdObject | null | boolean | number> => {
   const effectiveActionName = STORAGE_ACTIONS_ROUTE[actionName];
 
@@ -85,16 +84,16 @@ export const finalizeStorageOperation = async <
     let res = await (storageActionHandler as IStorageFinalizeFn)(event);
 
     if (Array.isArray(res) && res?.length) {
-      res = res.map(r => processCase(r, caseFields, dbStructure));
+      res = res.map(r => processCase(r, dbStructure));
     } else if (!Array.isArray(res) && res && typeof res === 'object') {
-      res = processCase(res as Record<string, unknown>, caseFields, dbStructure);
+      res = processCase(res as Record<string, unknown>, dbStructure);
     }
 
     return res as IIdObject | IIdObject[];
   } catch (ex: any) {
     logger.error(ex);
     logger.error(ex?.stack);
-    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES.noExpectedData, null, ex);
+    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.noExpectedData, null, ex);
   }
 
   return null;

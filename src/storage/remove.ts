@@ -4,7 +4,7 @@ import {
 import { IIdObject } from 'inladajs/dist/interfaces/base';
 import { createQueryBuilder } from '../queryBuilder';
 import {
-  ERROR_NAMES, IStorageFn, OPTION_NAMES, PLUGIN_NAME,
+  ERROR_NAMES_EXPORT, IStorageFn, OPTION_NAMES_EXPORT, PLUGIN_NAME_EXPORT,
 } from '../const';
 import { tableColumnTypes } from './utils';
 import { IQueryBuilderDelete } from '../interfaces/queryBuilder';
@@ -31,10 +31,10 @@ export const remove: IStorageFn = async <
 
   const ids = event.getGeneralIdentity();
   if (ids.length > 1 && !archive) {
-    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES.noMassDelete);
+    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.noMassDelete);
   }
   if (!ids.length) {
-    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES.nothingToProcess);
+    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.nothingToProcess);
   }
 
   const columnTypes = await tableColumnTypes(await pgClientFactory(event.uid), table);
@@ -52,23 +52,23 @@ export const remove: IStorageFn = async <
       .where([{ table, field: 'id', value: ids[0] }]);
   }
 
-  event.setPluginData(PLUGIN_NAME, query);
+  event.setPluginData(PLUGIN_NAME_EXPORT, { query });
 };
 
 export const afterRemove = async <TEvent extends IAnyEvent>(e: TEvent): Promise<boolean> => {
-  if (e.getOptions(OPTION_NAMES.$doNotExecQuery)) {
+  if (e.getOptions(OPTION_NAMES_EXPORT.$doNotExecQuery)) {
     return false;
   }
 
-  const query = e.getPluginData(PLUGIN_NAME);
+  const query = e.getPluginData(PLUGIN_NAME_EXPORT) as IQueryBuilderDelete;
 
-  const rows = await (query as IQueryBuilderDelete).execute<IIdObject>();
+  const rows = await query.execute<IIdObject>();
 
   const ids = e.getGeneralIdentity();
   const deletedIds = rows.filter(({ id }) => id);
 
   if (deletedIds.length !== ids.length) {
-    e.errorThrower.setErrorAndThrow(e, ERROR_NAMES.noAccess); // todo redo
+    e.errorThrower.setErrorAndThrow(e, ERROR_NAMES_EXPORT.noAccess); // todo redo
   }
 
   return true;

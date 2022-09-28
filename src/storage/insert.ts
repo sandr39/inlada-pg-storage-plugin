@@ -10,9 +10,15 @@ import {
 } from './utils';
 import { multiParamProcessors, QUERY_PROCESSOR_NAMES } from '../queryProcessor/abstractMultiParamsProcessors';
 import {
-  ACTION_NAMES, IStorageFn, OPTION_NAMES, PLUGIN_NAME, PLUGIN_SETS_EXPORT,
+  ACTION_NAMES_EXPORT, ERROR_NAMES_EXPORT, IStorageFn, OPTION_NAMES_EXPORT, PLUGIN_NAME_EXPORT, PLUGIN_SETS_EXPORT,
 } from '../const';
 import { createQueryBuilder } from '../queryBuilder';
+import {
+  IQueryBuilderDelete,
+  IQueryBuilderInsert,
+  IQueryBuilderSelect,
+  IQueryBuilderUpdate,
+} from '../interfaces/queryBuilder';
 
 export const insert: IStorageFn = async <
   TOBJECT_NAMES extends string,
@@ -59,18 +65,25 @@ export const insert: IStorageFn = async <
         .entries(createDefaults[relationFieldName])
         .reduce((a, [k, v]) => ((typeof v === 'function') ? { ...a, [k]: v(event) } : { ...a, [k]: v }), createData);
 
-      const subQuery = await event.processNewEvent({
-        [OPTION_NAMES.$doNotExecQuery]: true,
-        [OPTION_NAMES.$pluginSet]: PLUGIN_SETS_EXPORT.noExec,
+      await event.processNewEvent({
+        [OPTION_NAMES_EXPORT.$doNotExecQuery]: true,
+        [OPTION_NAMES_EXPORT.$pluginSet]: PLUGIN_SETS_EXPORT.noExec,
         ...createData,
       }, {
-        actionName: ACTION_NAMES.create, objectName: anotherEntityName,
+        actionName: ACTION_NAMES_EXPORT.create, objectName: anotherEntityName,
       });
 
-      return { field: relationFieldName, subQuery: subQuery.noOuterReturn(dbStructure[anotherEntityName as TOBJECT_NAMES]?.noNeedToReturn) };
+      const subQuery = event.getPluginData(PLUGIN_NAME_EXPORT) as undefined
+        | IQueryBuilderSelect | IQueryBuilderDelete | IQueryBuilderUpdate | IQueryBuilderInsert;
+
+      if (!subQuery) {
+        event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.noExpectedData);
+      }
+
+      return { field: relationFieldName, subQuery: subQuery.noOuterReturn(dbStructure[anotherEntityName as TOBJECT_NAMES]?.noNeedToReturn || false) };
     }));
 
-  const query = (await createQueryBuilder(pgClientFactory, event)).insert(
+  let query = (await createQueryBuilder(pgClientFactory, event)).insert(
     mainTable,
     [...fieldsToInsertWithValues, ...createdFields.map(({ field }) => field)].map(field => ({ field })),
     multiParamProcessors[$queryProcessorType]([...params, ...createdFields.map(({ subQuery }) => subQuery)]),
@@ -81,9 +94,8 @@ export const insert: IStorageFn = async <
   query.onConflict(await makeOnConflictStatement(await pgClientFactory(event.uid), mainTable, fieldsToUpdate));
   query.noOuterReturn(!!noNeedToReturn);
 
-  event.setPluginData(PLUGIN_NAME, query);
-
   let allCreatedEntities = {};
+  // todo redo - async map cycle on outer var is weird
   await Promise.all(
     filterPresentInEventRelationMany(event, relations, relationsAll)
       .map(async ([field, relation]) => {
@@ -99,16 +111,18 @@ export const insert: IStorageFn = async <
           .setReturning(realTable, [{ field: anotherJoinField }])
           .noOuterReturn(true);
 
-        event.setPluginData(PLUGIN_NAME, addNew);
+        query = addNew;
         return addNew;
       }),
   );
+
+  event.setPluginData(PLUGIN_NAME_EXPORT, { query });
 };
 
 export const afterInsert = async <TEvent extends IAnyEvent>(e: TEvent): Promise<unknown | unknown[] | null> => {
   const { me: { name, type: { name: entityName } = {} } } = e;
 
-  if (e.getOptions(OPTION_NAMES.$doNotExecQuery)) {
+  if (e.getOptions(OPTION_NAMES_EXPORT.$doNotExecQuery)) {
     return null;
   }
 

@@ -8,7 +8,7 @@ import {
 import { IJoinExtend, IQueryBuilderSelect, IWereFieldInfo } from '../interfaces/queryBuilder';
 import { createQueryBuilder } from '../queryBuilder';
 import {
-  ACTION_NAMES, IStorageFn, PLUGIN_NAME, OPTION_NAMES, PLUGIN_SETS_EXPORT,
+  ACTION_NAMES_EXPORT, IStorageFn, PLUGIN_NAME_EXPORT, OPTION_NAMES_EXPORT, PLUGIN_SETS_EXPORT,
 } from '../const';
 
 const getWhereFields = <
@@ -62,19 +62,21 @@ const joinAndExtend = async <
 
   const addWhereFields = [];
 
-  if (e.getOptions(OPTION_NAMES.$searchInside)) {
+  if (e.getOptions(OPTION_NAMES_EXPORT.$searchInside)) {
     addWhereFields.push(...getWhereFields(e, anotherEntityName as TOBJECT_NAMES, dbStructure));
   }
 
-  const subQuery = await e.processNewEvent({
-    [OPTION_NAMES.$doNotExecQuery]: true,
-    [OPTION_NAMES.$useExtendFieldSet]: true,
-    [OPTION_NAMES.$pluginSet]: PLUGIN_SETS_EXPORT.noExec,
+  await e.processNewEvent({
+    [OPTION_NAMES_EXPORT.$doNotExecQuery]: true,
+    [OPTION_NAMES_EXPORT.$useExtendFieldSet]: true,
+    [OPTION_NAMES_EXPORT.$pluginSet]: PLUGIN_SETS_EXPORT.noExec,
     ...whereFields,
     ...Object.fromEntries(addWhereFields.map(({ field, value }) => [field, value])),
   }, {
-    actionName: ACTION_NAMES.list, objectName: anotherEntityName,
-  }) as IQueryBuilderSelect;
+    actionName: ACTION_NAMES_EXPORT.list, objectName: anotherEntityName,
+  });
+
+  const subQuery = e.getPluginDataOrDefault(PLUGIN_NAME_EXPORT, {} as {childQuery: IQueryBuilderSelect})?.childQuery;
 
   if (fieldIsArray) {
     subQuery.groupBy([{ field: 'id', table: dbStructure[anotherEntityName as TOBJECT_NAMES]?.table as string }]);
@@ -158,7 +160,7 @@ export const list: IStorageFn = async <
     },
     parent,
   } = event;
-  const useExtendFieldSet = event.getOptions(OPTION_NAMES.$useExtendFieldSet) as boolean;
+  const useExtendFieldSet = event.getOptions(OPTION_NAMES_EXPORT.$useExtendFieldSet) as boolean;
   const fieldsToSelect = (useExtendFieldSet && fieldsToExtend) || fieldsToGet;
 
   const relations = getRelations(relationsAll, name);
@@ -196,31 +198,34 @@ export const list: IStorageFn = async <
 
   query.where(whereConditions);
 
-  if (event.getOptions(OPTION_NAMES.$orderByIdDesc)) {
+  if (event.getOptions(OPTION_NAMES_EXPORT.$orderByIdDesc)) {
     query.order([{ table: mainTable, field: 'id' }], QUERY_ORDER_DIRECTION.desc);
   }
 
-  if (event.getOptions(OPTION_NAMES.$orderById)) {
+  if (event.getOptions(OPTION_NAMES_EXPORT.$orderById)) {
     query.order([{ table: mainTable, field: 'id' }]);
   }
 
-  event.setPluginData(PLUGIN_NAME, query);
-
-  const noExtend = event.getOptions(OPTION_NAMES.$noExtend);
+  const noExtend = event.getOptions(OPTION_NAMES_EXPORT.$noExtend);
   if (!noExtend) {
-    // join fields to select
-    await Promise.all(fieldsToSelect.filter(fs => relations[fs])
-      .map(fs => relations[fs].map(async rel => {
-        const currentRelation = relationsAll[rel];
+    const joinRelations = fieldsToSelect
+      .filter(fs => relations[fs])
+      .map(fs => [fs, relations[fs]])
+      .map(([fs, rel1]) => (rel1 as number[]).map(rel => [fs, rel]))
+      .flat(1) as [string, number][];
 
-        const parentRelationWhere = parent.find(p => `${p.name}Id` === fs);
-        const whereFields = { id: parentRelationWhere?.id[0] }; // todo parentFields / parentEntity
-        const parentIdIsSet = !!parentRelationWhere?.id.length;
-        return joinAndExtend(event, query, {
-          relation: currentRelation,
-          fieldName: fs,
-        }, whereFields, parentIdIsSet, dbStructure);
-      }))
-      .flat(2));
+    await joinRelations.reduce((acc, [fs, rel]) => acc.then(() => {
+      const currentRelation = relationsAll[rel];
+
+      const parentRelationWhere = parent.find(p => `${p.name}Id` === fs);
+      const whereFields = { id: parentRelationWhere?.id[0] }; // todo parentFields / parentEntity
+      const parentIdIsSet = !!parentRelationWhere?.id.length;
+      return joinAndExtend(event, query, {
+        relation: currentRelation,
+        fieldName: fs,
+      }, whereFields, parentIdIsSet, dbStructure);
+    }), Promise.resolve());
   }
+
+  event.setPluginData(PLUGIN_NAME_EXPORT, { query });
 };
