@@ -60,7 +60,7 @@ export const afterRemove = async <TEvent extends IAnyEvent>(e: TEvent): Promise<
     return false;
   }
 
-  const query = e.getPluginData(PLUGIN_NAME_EXPORT) as IQueryBuilderDelete;
+  const { query } = e.getPluginData(PLUGIN_NAME_EXPORT) as { query: IQueryBuilderDelete };
 
   const rows = await query.execute<IIdObject>();
 

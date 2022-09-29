@@ -73,8 +73,8 @@ export const insert: IStorageFn = async <
         actionName: ACTION_NAMES_EXPORT.create, objectName: anotherEntityName,
       });
 
-      const subQuery = event.getPluginData(PLUGIN_NAME_EXPORT) as undefined
-        | IQueryBuilderSelect | IQueryBuilderDelete | IQueryBuilderUpdate | IQueryBuilderInsert;
+      const { childQuery: subQuery } = event.getPluginData(PLUGIN_NAME_EXPORT) as { childQuery: undefined
+        | IQueryBuilderSelect | IQueryBuilderDelete | IQueryBuilderUpdate | IQueryBuilderInsert };
 
       if (!subQuery) {
         event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.noExpectedData);
