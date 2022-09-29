@@ -49,7 +49,7 @@ export const insert: IStorageFn = async <
 
   const createdFields = await Promise.all((Object.entries(relations)
     .filter(([relationFieldName]) => event.get(relationFieldName) === undefined || event.get(relationFieldName) === null)
-    .map(([relationFieldName, rel]) => rel.map(i => [relationFieldName, Object.keys(dbStructure)[i]]))
+    .map(([relationFieldName, rel]) => rel.map(i => [relationFieldName, relationsAll[i]]))
     .flat(1) as [string, IEntityRelation<TOBJECT_NAMES>][]) // f..ing flat!!
     .filter(([relationFieldName, { type, table }]) => (type === RELATION_TYPE.one && table === name && createDefaults?.[relationFieldName]))
     .map(async ([relationFieldName, r]) => {
