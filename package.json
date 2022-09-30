@@ -1,6 +1,6 @@
 {
   "name": "inlada-pg-storage-plugin",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,7 @@
   "dependencies": {
     "inlada-logger": "^1.0.0",
     "inlada-postgresql-client": "^1.0.1",
-    "inladajs": "^1.0.7",
+    "inladajs": "^1.0.9",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

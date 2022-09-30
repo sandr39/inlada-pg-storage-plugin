@@ -93,9 +93,12 @@ export const makeOnConflictStatement = async (pgClient: IPGClient, table: string
     return '';
   }
   const uniqueKey = await pgClient.getTableUniqueKey(table);
-  return uniqueKey && uniqueKey.length
-    ? `on conflict (${uniqueKey}) DO UPDATE SET
-        (${fields?.join(',')}) = (${fields?.map(ftu => `EXCLUDED.${ftu}`).join(',')})`
+  return uniqueKey?.length
+    ? `on conflict (${uniqueKey}) DO UPDATE SET ${
+      fields.length === 1
+        ? `${fields[0]} = EXCLUDED.${fields[0]}`
+        : `(${fields.join(',')}) = (${fields.map(ftu => `EXCLUDED.${ftu}`).join(',')})`
+    }`
     : '';
 };
 
