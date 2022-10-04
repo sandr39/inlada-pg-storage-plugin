@@ -2,6 +2,7 @@ import {
   IAnyEvent, IStorageClientFactory,
 } from 'inladajs';
 import { IIdObject } from 'inladajs/dist/interfaces/base';
+import { IPGClient } from 'inlada-postgresql-client';
 import { createQueryBuilder } from '../queryBuilder';
 import {
   ERROR_NAMES_EXPORT, IStorageFn, OPTION_NAMES_EXPORT, PLUGIN_NAME_EXPORT,
@@ -37,7 +38,7 @@ export const remove: IStorageFn = async <
     event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.nothingToProcess);
   }
 
-  const columnTypes = await tableColumnTypes(await pgClientFactory(event.uid), table);
+  const columnTypes = await tableColumnTypes(await pgClientFactory(event.uid) as IPGClient, table);
 
   let query;
 

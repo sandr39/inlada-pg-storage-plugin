@@ -2,6 +2,7 @@ import {
   IAnyEvent, IEntityRelation, IObjectInfo, IStorageClientFactory, RELATION_TYPE,
 } from 'inladajs';
 import { IIdObject } from 'inladajs/dist/interfaces/base';
+import { IPGClient } from 'inlada-postgresql-client';
 import {
   determineMeAnother, exec,
   filterPresentInEventRelationMany,
@@ -91,7 +92,7 @@ export const insert: IStorageFn = async <
 
   query.setReturning(mainTable, [{ field: 'id', alias: `${entityName || name}Id` }]);
 
-  query.onConflict(await makeOnConflictStatement(await pgClientFactory(event.uid), mainTable, fieldsToUpdate));
+  query.onConflict(await makeOnConflictStatement(await pgClientFactory(event.uid) as IPGClient, mainTable, fieldsToUpdate));
   query.noOuterReturn(!!noNeedToReturn);
 
   let allCreatedEntities = {};
@@ -107,7 +108,7 @@ export const insert: IStorageFn = async <
         allCreatedEntities = { ...allCreatedEntities, ...query.getAllCreatedEntities() };
         const addNew = (await createQueryBuilder(pgClientFactory, event))
           .insert(realTable, [{ field: meJoinField }, { field: anotherJoinField }], ids.map(val => [query, val]), allCreatedEntities)
-          .onConflict(await makeOnConflictStatement(await pgClientFactory(event.uid), realTable, [meJoinField, anotherJoinField]))
+          .onConflict(await makeOnConflictStatement(await pgClientFactory(event.uid) as IPGClient, realTable, [meJoinField, anotherJoinField]))
           .setReturning(realTable, [{ field: anotherJoinField }])
           .noOuterReturn(true);
 

@@ -1,6 +1,7 @@
 import {
   IAnyEvent, IEntityRelation, IObjectInfo, IStorageClientFactory,
 } from 'inladajs';
+import { IPGClient } from 'inlada-postgresql-client';
 import {
   determineMeAnother,
   exec,
@@ -48,7 +49,7 @@ export const update: IStorageFn = async <
         if (ids.length) {
           const addNew = (await createQueryBuilder(pgClientFactory, event))
             .insert(realTable, [{ field: meJoinField }, { field: anotherJoinField }], ids.map(val => [myId?.[0] || myId, val])) // todo mass update - here I need number now to insert like id
-            .onConflict(await makeOnConflictStatement(await pgClientFactory(event.uid), realTable, [meJoinField, anotherJoinField]))
+            .onConflict(await makeOnConflictStatement(await pgClientFactory(event.uid) as IPGClient, realTable, [meJoinField, anotherJoinField]))
             .setReturning(realTable, [{ field: anotherJoinField }])
             .noOuterReturn(true);
 
@@ -89,7 +90,7 @@ export const update: IStorageFn = async <
     event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.nothingToProcess);
   }
 
-  const columnTypes = await tableColumnTypes(await pgClientFactory(event.uid), table);
+  const columnTypes = await tableColumnTypes(await pgClientFactory(event.uid) as IPGClient, table);
 
   const query = (await createQueryBuilder(pgClientFactory, event))
     .update(table, fieldsToUpdateSelective, params)
