@@ -17,6 +17,7 @@ export enum OPTION_NAMES_EXPORT {
   $orderById = '$orderById',
   $noExtend = '$noExtend',
   $searchInside = '$searchInside',
+  $selectFields = '$selectFields',
   $pluginSet = '$pluginSet'
 }
 

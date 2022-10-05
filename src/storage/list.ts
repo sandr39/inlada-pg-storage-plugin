@@ -161,11 +161,16 @@ export const list: IStorageFn = async <
     parent,
   } = event;
   const useExtendFieldSet = event.getOptions(OPTION_NAMES_EXPORT.$useExtendFieldSet) as boolean;
-  const fieldsToSelect = (useExtendFieldSet && fieldsToExtend) || fieldsToGet;
+
+  const additionalField = event.getOptions(OPTION_NAMES_EXPORT.$selectFields) as string[];
+
+  const fieldsToSelect = [
+    ...((useExtendFieldSet && fieldsToExtend) || fieldsToGet || [] as string[]),
+    ...(additionalField !== undefined ? additionalField : [])];
 
   const relations = getRelations(relationsAll, name);
 
-  if (!fieldsToSelect || !mainTable) {
+  if (!fieldsToSelect?.length || !mainTable) {
     throw new Error(`No data, ${name}: fieldsToSelect: ${fieldsToSelect}, mainTable: ${mainTable}`); // todo error
   }
 

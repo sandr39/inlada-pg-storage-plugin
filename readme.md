@@ -20,6 +20,8 @@ const pgClientFactory = pgClientFactoryFactory(clientParams);
 const storagePlugin = createPostgresStoragePlugin(pgClientFactory, dbStorage, dbRelations);
 
 ```
-About plugin idea, usage and interface see inladajs
+About plugin idea, usage and interface see [inladajs]()
 
+```typescript
 
+```
