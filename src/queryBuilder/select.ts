@@ -223,7 +223,7 @@ export class QueryBuilderSelect extends QueryBuilderWhere<IQueryBuilderSelect> i
           ? qBuilder.selectFields
           : qBuilder.selectFields.filter(f => extObj.fields.findIndex((
             { tableAlias, fieldAlias },
-          ) => tableAlias === f.tableAlias && fieldAlias === f.alias) > -1);
+          ) => tableAlias === f.tableAlias && fieldAlias === (f.alias || f.field)) > -1);
         return ({
           field: `json_agg(json_build_object(${extFields.map((
             { tableAlias, field, alias },
@@ -236,7 +236,7 @@ export class QueryBuilderSelect extends QueryBuilderWhere<IQueryBuilderSelect> i
           ? qBuilder.selectFields
           : qBuilder.selectFields.filter(f => extObj.fields.findIndex((
             { tableAlias, fieldAlias },
-          ) => tableAlias === f.tableAlias && fieldAlias === f.alias) > -1);
+          ) => tableAlias === f.tableAlias && fieldAlias === (f.alias || f.field)) > -1);
         return {
           field: `json_build_object(${extFields.map((
             { tableAlias, field, alias },
@@ -250,8 +250,8 @@ export class QueryBuilderSelect extends QueryBuilderWhere<IQueryBuilderSelect> i
       }
       if (extObj.type === EXTEND_TYPE.notPacked) {
         const extField = qBuilder.selectFields.find((
-          { tableAlias, alias },
-        ) => extObj.fields[0].tableAlias === tableAlias && extObj.fields[0].fieldAlias === alias);
+          { tableAlias, alias, field },
+        ) => extObj.fields[0].tableAlias === tableAlias && extObj.fields[0].fieldAlias === (alias || field));
         if (extField?.field) {
           return ({ tableAlias: extField.tableAlias, field: extField.field, alias: extObj.alias } as IFieldWithAlias);
         }
