@@ -227,7 +227,7 @@ export class QueryBuilderSelect extends QueryBuilderWhere<IQueryBuilderSelect> i
         return ({
           field: `json_agg(json_build_object(${extFields.map((
             { tableAlias, field, alias },
-          ) => `'${alias}', ${tableAlias ? `${tableAlias}.` : ''}${field}`).join(', ')}))`,
+          ) => `'${alias || field}', ${tableAlias ? `${tableAlias}.` : ''}${field}`).join(', ')}))`,
           alias: extObj.alias,
         });
       }
@@ -240,7 +240,7 @@ export class QueryBuilderSelect extends QueryBuilderWhere<IQueryBuilderSelect> i
         return {
           field: `json_build_object(${extFields.map((
             { tableAlias, field, alias },
-          ) => `'${alias}', ${tableAlias ? `${tableAlias}.` : ''}${field}`).join(', ')})`,
+          ) => `'${alias || field}', ${tableAlias ? `${tableAlias}.` : ''}${field}`).join(', ')})`,
           alias: extObj.alias,
         } as IFieldWithAlias;
       }

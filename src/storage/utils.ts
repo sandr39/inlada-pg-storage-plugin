@@ -49,7 +49,7 @@ const getValuesFromEvent = <
 
   fieldsToProcess?.forEach(fti => {
     const val = e.get(fti);
-    const valAlias = e.get(fields?.[fti]?.alias);
+    const valAlias = fields?.[fti]?.alias && e.get(fields?.[fti]?.alias);
 
     if (typeof val !== 'undefined') {
       fieldsWithValues.push(fti);
