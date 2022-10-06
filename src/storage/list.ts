@@ -166,7 +166,7 @@ export const list: IStorageFn = async <
 
   const fieldsToSelect = [
     ...((useExtendFieldSet && fieldsToExtend) || fieldsToGet || [] as string[]),
-    ...(additionalField !== undefined ? additionalField : [])];
+    ...(additionalField !== undefined ? additionalField.filter(afn => fields && fields[afn] !== undefined) : [])];
 
   const relations = getRelations(relationsAll, name);
 
