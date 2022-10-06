@@ -93,7 +93,7 @@ export const finalizeStorageOperation = async <
   } catch (ex: any) {
     logger.error(ex);
     logger.error(ex?.stack);
-    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.noExpectedData, null, ex);
+    event.setErrorAndThrow(ERROR_NAMES_EXPORT.noExpectedData, null, ex);
   }
 
   return null;

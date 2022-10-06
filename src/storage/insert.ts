@@ -78,7 +78,7 @@ export const insert: IStorageFn = async <
         | IQueryBuilderSelect | IQueryBuilderDelete | IQueryBuilderUpdate | IQueryBuilderInsert };
 
       if (!subQuery) {
-        event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.noExpectedData);
+        event.setErrorAndThrow(ERROR_NAMES_EXPORT.noExpectedData);
       }
 
       return { field: relationFieldName, subQuery: subQuery.noOuterReturn(dbStructure[anotherEntityName as TOBJECT_NAMES]?.noNeedToReturn || false) };

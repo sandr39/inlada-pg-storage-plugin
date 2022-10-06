@@ -32,10 +32,10 @@ export const remove: IStorageFn = async <
 
   const ids = event.getGeneralIdentity();
   if (ids.length > 1 && !archive) {
-    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.noMassDelete);
+    event.setErrorAndThrow(ERROR_NAMES_EXPORT.noMassDelete);
   }
   if (!ids.length) {
-    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.nothingToProcess);
+    event.setErrorAndThrow(ERROR_NAMES_EXPORT.nothingToProcess);
   }
 
   const columnTypes = await tableColumnTypes(await pgClientFactory(event.uid) as IPGClient, table);
@@ -69,7 +69,7 @@ export const afterRemove = async <TEvent extends IAnyEvent>(e: TEvent): Promise<
   const deletedIds = rows.filter(({ id }) => id);
 
   if (deletedIds.length !== ids.length) {
-    e.errorThrower.setErrorAndThrow(e, ERROR_NAMES_EXPORT.noAccess); // todo redo
+    e.setErrorAndThrow(ERROR_NAMES_EXPORT.noAccess); // todo redo
   }
 
   return true;

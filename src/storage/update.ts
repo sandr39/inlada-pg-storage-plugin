@@ -87,7 +87,7 @@ export const update: IStorageFn = async <
 
   // duplicates in updateRelatedTables (try processEntityAssociations)
   if (!fieldsToUpdateSelective?.length && !updateRelatedTables.length) {
-    event.errorThrower.setErrorAndThrow(event, ERROR_NAMES_EXPORT.nothingToProcess);
+    event.setErrorAndThrow(ERROR_NAMES_EXPORT.nothingToProcess);
   }
 
   const columnTypes = await tableColumnTypes(await pgClientFactory(event.uid) as IPGClient, table);
