@@ -33,7 +33,7 @@ const multiArray = (params: unknown[][]) => {
     return params;
   }
 
-  const arrayParamsMap = Object.fromEntries(arrayParams.map(p => [p, p]));
+  const arrayParamsMap = Object.fromEntries(arrayParams.map(p => [p.length, p]));
   if (Object.keys(arrayParamsMap).length > 1) {
     // several arrays with different lengths
     throw new Error(`multiArray: different lengths: ${arrayParams.map(p => ({ value: p, length: p.length }))}`);
