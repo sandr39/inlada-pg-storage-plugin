@@ -204,10 +204,12 @@ export class QueryBuilderInsert extends QueryBuilderWhere<QueryBuilderInsert> im
     // so, we should transform it into [][]
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const isValuesArrayOfArrays = values.length && !values.find((v: (IQueryParam | IQueryBuilderCore)[] | IQueryParam | IQueryBuilderCore) => !Array.isArray(v));
+    const isSingleRow = values.length === 0 || values.some(
+      (v: (IQueryParam | IQueryBuilderCore)[] | IQueryParam | IQueryBuilderCore) => !Array.isArray(v),
+    );
 
     let valuesToInsert: (IQueryParam | IQueryBuilderCore)[][];
-    if (!isValuesArrayOfArrays) {
+    if (isSingleRow) {
       valuesToInsert = [values as (IQueryParam | IQueryBuilderCore)[]];
     } else {
       valuesToInsert = values as (IQueryParam | IQueryBuilderCore)[][];
